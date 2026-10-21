@@ -1,4 +1,4 @@
-import { getDb } from "./store.js";
+import { getDb, saveDb } from "./store.js";
 
 export function nowIso() {
   return new Date().toISOString();
@@ -118,4 +118,11 @@ export function publicUser(user) {
 
 export function bookingReference(id) {
   return `CN-${id.slice(0, 8).toUpperCase()}`;
+}
+
+export async function reapHolds() {
+  const db = getDb();
+  const expired = expireHolds(db);
+  if (expired.length > 0) await saveDb();
+  return expired;
 }

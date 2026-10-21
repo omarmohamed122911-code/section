@@ -8,6 +8,7 @@ const dbPath = path.join(dataDir, "db.json");
 
 let db = null;
 let writeChain = Promise.resolve();
+let mutateChain = Promise.resolve();
 
 function defaultDb() {
   return {
@@ -54,8 +55,12 @@ export function saveDb() {
 }
 
 export async function mutate(fn) {
-  const current = getDb();
-  const result = await fn(current);
-  await saveDb();
-  return result;
+  const run = mutateChain.then(async () => {
+    const current = getDb();
+    const result = await fn(current);
+    await saveDb();
+    return result;
+  });
+  mutateChain = run.catch(() => {});
+  return run;
 }
